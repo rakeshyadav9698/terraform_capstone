@@ -1,8 +1,7 @@
-# main.tf (Root Module)
-
 provider "aws" {
   region = "ap-south-1"  # Specify your AWS region
 }
+
 module "networking" {
   source = "./modules/networking"  # Path to your networking module
 }
@@ -25,9 +24,9 @@ module "ec2" {
 
 module "aurora" {
   source                = "./modules/aurora"  # Path to your Aurora module
-  vpc_id                = module.networking.vpc_id           # Output from networking module
-  db_subnet_ids         = module.networking.db_subnet_ids    # Output from networking module
-  db_security_group_id  = module.security.db_security_group_id  # Output from security module
+  vpc_id                = module.networking.vpc_id
+  db_subnet_ids         = module.networking.db_subnet_ids
+  db_security_group_id  = module.security.db_security_group_id
 }
 
 output "vpc_id" {

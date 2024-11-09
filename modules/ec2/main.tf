@@ -1,3 +1,6 @@
+
+# Define variables for security group and subnet
+
 variable "db_security_group_id" {
   description = "Security Group ID to associate with the EC2 instance"
   type        = list(string)
@@ -23,6 +26,7 @@ resource "aws_instance" "ec2_instance" {
   vpc_security_group_ids = var.db_security_group_id  # Use the provided security group ID
   key_name               = "ubuntu-node-key-pair"
   associate_public_ip_address = true
+
 
   # Optional: Add tags for the instance
   tags = {
