@@ -16,6 +16,13 @@ module "iam" {
   source = "./modules/iam"          # Path to your IAM module
 }
 
+module "ec2" {
+  source    = "./modules/ec2"  # Path to your EC2 module
+  vpc_id    = module.networking.vpc_id
+  subnet_id = module.networking.db_subnet_ids[0]
+  db_security_group_id   = [module.security.ec2_security_group_id]
+}
+
 module "aurora" {
   source                = "./modules/aurora"  # Path to your Aurora module
   vpc_id                = module.networking.vpc_id           # Output from networking module
