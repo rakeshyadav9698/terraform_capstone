@@ -5,7 +5,12 @@ variable "vpc_id" {
 
 variable "db_subnet_ids" {
   description = "The IDs of the subnets for the Aurora cluster"
-  type        = list(string)
+  type        = string
+}
+
+variable "ec2_subnet_id" {
+  description = "The IDs of the subnets for the Aurora cluster"
+  type        = string
 }
 
 variable "db_security_group_id" {

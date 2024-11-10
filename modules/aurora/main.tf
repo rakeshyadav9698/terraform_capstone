@@ -1,3 +1,12 @@
+resource "aws_rds_cluster_instance" "cluster_instances" {
+  identifier         = "aurora-cluster-demo"
+  cluster_identifier = aws_rds_cluster.aurora.id
+  instance_class     = "db.r5.large"
+  engine             = aws_rds_cluster.aurora.engine
+  engine_version     = aws_rds_cluster.aurora.engine_version
+  publicly_accessible   = true
+}
+
 resource "aws_rds_cluster" "aurora" {
   cluster_identifier = "my-aurora-cluster"
   engine            = "aurora-mysql"  # Specify your Aurora engine type
@@ -15,7 +24,7 @@ resource "aws_rds_cluster" "aurora" {
 
 resource "aws_db_subnet_group" "default" {
   name       = "aurora-subnet-group"
-  subnet_ids = var.db_subnet_ids
+  subnet_ids = [var.db_subnet_ids, var.ec2_subnet_id]
 
   tags = {
     Name = "aurora-subnet-group"

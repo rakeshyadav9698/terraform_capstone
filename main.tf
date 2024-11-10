@@ -18,7 +18,7 @@ module "iam" {
 module "ec2" {
   source    = "./modules/ec2"  # Path to your EC2 module
   vpc_id    = module.networking.vpc_id
-  subnet_id = module.networking.db_subnet_ids[0]
+  subnet_id = module.networking.ec2_subnet_ids
   db_security_group_id   = [module.security.ec2_security_group_id]
 }
 
@@ -26,6 +26,7 @@ module "aurora" {
   source                = "./modules/aurora"  # Path to your Aurora module
   vpc_id                = module.networking.vpc_id
   db_subnet_ids         = module.networking.db_subnet_ids
+  ec2_subnet_id         = module.networking.ec2_subnet_ids
   db_security_group_id  = module.security.db_security_group_id
 }
 

@@ -1,19 +1,30 @@
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 
+  enable_dns_support   = true  # Enable DNS support
+  enable_dns_hostnames = true  # Enable DNS hostnames
   tags = {
     Name = "main_vpc"
   }
 }
 
 resource "aws_subnet" "private" {
-  count                   = 2
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.${count.index}.0/24"
-  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "ap-south-1a"
 
   tags = {
-    Name = "private_subnet_${count.index}"
+    Name = "vpc_private_subnet"
+  }
+}
+
+resource "aws_subnet" "ec2_private" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "ap-south-1b"
+
+  tags = {
+    Name = "vpc_ec2_private_subnet"
   }
 }
 
@@ -40,76 +51,25 @@ resource "aws_route_table" "public_route_table" {
 
 resource "aws_route_table_association" "subnet_association" {
   count          = 2
-  subnet_id      = aws_subnet.private[count.index].id
+  subnet_id      = aws_subnet.private.id
   route_table_id = aws_route_table.public_route_table.id
 }
 
-data "aws_availability_zones" "available" {}
+resource "aws_route_table_association" "subnet_ec2_association" {
+  count          = 2
+  subnet_id      = aws_subnet.ec2_private.id
+  route_table_id = aws_route_table.public_route_table.id
+}
+
 
 output "vpc_id" {
   value = aws_vpc.main.id
 }
 
 output "db_subnet_ids" {
-  value = aws_subnet.private[*].id
+  value = aws_subnet.private.id
 }
 
-resource "aws_security_group" "db_security_group" {
-  name        = "db_security_group"
-  description = "Allow database access from specific IPs"
-  vpc_id      = var.vpc_id  # Use the passed VPC ID
-
-  # Allow access from your local IP to Aurora's port (3306 for MySQL/PostgreSQL)
-  ingress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = ["49.47.2.213/32"]
-  }
-
-  # Allow all outbound traffic for the RDS service
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "db_security_group"
-  }
-}
-
-resource "aws_security_group" "ec2_security_group" {
-  name        = "ec2_security_group"
-  description = "Allow SSH access from a specific IP"
-  vpc_id      = var.vpc_id  # Use the passed VPC ID
-
-  # Allow SSH access from your local IP
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["49.47.2.213/32"]
-  }
-
-  # Allow outbound traffic for the EC2 instance
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "ec2_security_group"
-  }
-}
-
-output "db_security_group_id" {
-  value = aws_security_group.db_security_group.id
-}
-
-output "ec2_security_group_id" {
-  value = aws_security_group.ec2_security_group.id
+output "ec2_subnet_ids" {
+  value = aws_subnet.ec2_private.id
 }
